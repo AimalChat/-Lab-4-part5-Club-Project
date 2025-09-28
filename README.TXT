@@ -312,13 +312,50 @@ its methods to choose the correct version of nextInt. Alternatively, we
 cover the Random class in Chapter 6
 
 43b.
+    //Random number generator
+    private Random randomGenerator;
+
+    /**
+     * Create a MusicOrganizer
+     */
+    public MusicOrganizer()
+    {
+        randomGenerator = new Random();
+        player = new MusicPlayer();
+        reader = new TrackReader();
+        trackList = reader.readTracks("../audio", ".mp3");
+        if(! trackList.isEmpty()) {
+            System.out.println("Music library loaded. " + getNumberOfTracks() + " tracks.");
+        }
+        else {
+            System.out.println("No tracks loaded.");
+        }
+        System.out.println();
+    }
+    
+    public void playRandomTrack()
+    {
+        int randomIndex;
+        randomIndex = randomGenerator.nextInt(trackList.size());
+        //stop currently playing track, if one is being played.
+        stopPlaying();
+        Track track = trackList.get(randomIndex);
+        player.startPlaying(track.getFilename());
+        //increment current song's counter for amt played.
+        track.incrementCount();
+        System.out.println("Now playing: " + track.getArtist() + " - " + track.getTitle() + " - Times played : " + track.getCount());   
+    }
 
 44a.Challenge exercise Consider how you might play multiple tracks in a random 
 order. Would you want to make sure that all tracks are played equally or prefer 
 favorite tracks? How might a “play count” field in the Track class help with 
 this task? Discuss the various options.
 
-44b.
+44b.Maybe creating a new array list in which we add them in random order and then
+play said list with PlayAllTracks. A while loop will be necessary and using the 
+play count as a flag would be great since if play count = 1, we shuffle once more
+the index chosen and play that. If statements would be great to implement as a
+guard, alonside the playcount condition. All tracks would be weigthed equally.
 
 45a. Challenge exercise Write a method to play every track in the track list 
 exactly once in random order. 
@@ -332,4 +369,31 @@ If you try the first, how easy is it to shuffle the list so that it is genuinely
 in a new random order? Are there any library methods that could help with this?
 
 
-45b.
+45b.I did not do the first, since I couldnt seem to make it work. As for the second
+method, I used remove and add in this method to add the selected random track into 
+the randomized tracklist and remove said track from the copy of the original safely.
+Doing so prevents the original files from being deleted from the whole class who needs
+it.
+
+    public void ShufflePlayAllTracks()
+    {
+        int randomIndex;
+        //copy of original playlist.
+        ArrayList<Track> copyOfTrackList = new ArrayList<Track>(trackList);
+        //New randomized tracklist.
+        ArrayList<Track> randomizedTrackList = new ArrayList<Track>();
+        while(copyOfTrackList.size() > 0){
+            randomIndex = randomGenerator.nextInt(copyOfTrackList.size());
+            Track randomTrack = copyOfTrackList.get(randomIndex);
+            randomizedTrackList.add(randomTrack);
+            copyOfTrackList.remove(randomIndex);
+        }
+        for(Track track : randomizedTrackList){
+            //Stop playing current track to play next one.
+            stopPlaying();
+            player.startPlaying(track.getFilename());
+            //increment current song's counter for amt played.
+            track.incrementCount();
+            System.out.println("Now playing: " + track.getArtist() + " - " + track.getTitle() + " - Times played : " + track.getCount());
+        }
+    }
